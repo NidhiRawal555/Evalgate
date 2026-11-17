@@ -11,7 +11,11 @@ CONFIG = yaml.safe_load(open("assistant_config.yaml"))
 DOMAIN = CONFIG["domains"][CONFIG["active"]]
 
 MODEL = CONFIG.get("model", "llama3.1:8b")
-Settings.llm = Ollama(model=MODEL, request_timeout=180.0, temperature=0)
+Settings.llm = Ollama(
+    model=MODEL,
+    request_timeout=CONFIG.get("request_timeout_seconds", 180.0),
+    temperature=0,
+)
 Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 Settings.chunk_size = DOMAIN["chunk_size"]
 

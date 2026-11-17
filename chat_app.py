@@ -1,6 +1,10 @@
 import os
 import requests
 import streamlit as st
+import yaml
+
+with open("assistant_config.yaml") as config_file:
+    REQUEST_TIMEOUT = yaml.safe_load(config_file).get("request_timeout_seconds", 180)
 
 st.set_page_config(page_title="Northpeak Assist", page_icon="🤖")
 st.title("🤖 Northpeak Assist")
@@ -24,12 +28,17 @@ if question := st.chat_input("Ask about Northpeak policies or products..."):
     with st.chat_message("assistant"):
         try:
             with st.spinner("Thinking..."):
-                r = requests.post("http://127.0.0.1:8000/ask",
-                                  json={"question": question, "prompt_version": version}, timeout=180)
+                r = requests.post(
+                    "http://127.0.0.1:8000/ask",
+                    json={"question": question, "prompt_version": version},
+                    timeout=REQUEST_TIMEOUT,
+                )
                 data = r.json()
             sources = ", ".join(f"{s['file']} ({s['score']})" for s in data["sources"])
             answer = data["answer"].replace("$", "\\$")
             reply = f"{answer}\n\n**Sources:** {sources}  \n*Prompt version: {data['prompt_version']}*"
+        except requests.exceptions.Timeout:
+            reply = "⚠️ The assistant timed out. Check that Ollama is responsive or try a smaller model."
         except requests.exceptions.ConnectionError:
             reply = "⚠️ The assistant API isn't running. Start it with: `uvicorn app:app`"
         st.markdown(reply)

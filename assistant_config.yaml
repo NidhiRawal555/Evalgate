@@ -2,7 +2,9 @@
 active: northpeak
 
 # The AI model the assistant uses (Incident 2: try llama3.2:3b to save cost)
-model: llama3.1:8b
+model: llama3.2:3b
+
+request_timeout_seconds: 600
 
 domains:
   northpeak:
